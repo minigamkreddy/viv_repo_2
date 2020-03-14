@@ -1,0 +1,51 @@
+def get_network_module_info(self):
+        """Prints the network module information to log file
+
+        Returns:
+          bool: retVal. Mac address of network module for success,
+          False otherwise.
+        """
+        data = ''
+        try:
+            self._write_erial("send_net_router_command \"ip link show wlan0 |"
+                              " awk '/ether/ {print $2}'\"")
+            time.sleep(5)  # Sleeping
+            start_time = time.time()
+            while True:
+                data = data + self._read_serial(self.serial_port.inWaiting())
+                logger.info("network module info:- %s", data)
+                if "Response:" in data:
+                    if "No data returned." in data:
+                        time.sleep(3)  # Sleeping
+                        self._write_erial("send_net_router_command \"ip "
+                                          "link show wlan0 | awk '/ether/ "
+                                          "{print $2}'\"")
+                        time.sleep(8)  # Sleeping
+                        data = ''
+                    else:
+                        time.sleep(2)  # Sleeping
+                        mac = re.search(r'([0-9A-F]{2}[:-]){5}([0-9A-F]{2})',
+                                        data,
+                                        re.I)
+                        if mac is None:
+                            logger.info("wlan0 interface not exist")
+                            return False
+                        else:
+                            mac = re.search(
+                                r'([0-9A-F]{2}[:-]){5}([0-9A-F]{2})',
+                                data,
+                                re.I).group()
+                        return {'DUT_MAC': mac}
+                else:
+                    logger.info('Waiting for mac address')
+                    if time.time() > start_time + WAITING_TIME:
+                        logger.info('Timed out waiting for network info')
+                        break
+                    time.sleep(3)
+            return False
+        except (IndexError, Exception) as error_msg:
+            logger.error('Error in getting the network information from the '
+                          'panel: %s ', error_msg)
+            return False
+
+ 

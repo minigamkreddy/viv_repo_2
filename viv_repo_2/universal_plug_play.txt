@@ -1,0 +1,26 @@
+Universal plug and play sends the SSDP packets
+
+1) Nofity
+2) M-Search
+3) Response
+
+
+4) Request
+5) Response
+
+when any printer or router are directly connected to your system we don't know the information of printer or router like ip address of printer or router
+
+For Example
+
+	Here Router should act as the UPNP Server and your system should act as the UPNP Client
+
+	The Tenda Router is directly connected to your system in repeater mode so LAN and WAN will act as the same Network. So, Here we don't know the IP Address of the Tenda Router for access the router.
+	So, Here upnp plays a major role that when we connect your system to the router will send the Notify packet to all client 
+
+
+	Here Notify ,M-Search are multicast because the upnp is multicast traffic use the udp along with the HTTP_OK or response uses the udp with unicast traffic
+	
+	After this TCP connection will be done to access the router which is provided with the give LINK.
+
+	https://www.electricmonk.nl/log/2016/07/05/exploring-upnp-with-python/
+https://openconnectivity.org/
