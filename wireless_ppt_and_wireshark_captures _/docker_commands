@@ -1,0 +1,237 @@
+This is the link which we need to follow 
+DOCKER MACVLAN DRIVER:
+docker info
+Information about the docker
+https://docs.docker.com/engine/userguide/networking/get-started-macvlan/
+commands
+
+docker volume ls
+docker volume prune
+
+The link which gives the information about the docker swam
+https://docs.docker.com/engine/reference/commandline/swarm_init/
+
+
+docker swarm
+apt-get install the docker-compose
+
+cd /var/lib/docker/
+cd /var/run/
+
+dockerd command is used to the run the to bring up the container automatically
+
+
+1) apt-get remove docker docker-engine docker.io containerd runc
+2) sudo apt-get update
+3) sudo apt-get install \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg-agent \
+    software-properties-common
+4) curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+5) sudo apt-key fingerprint 0EBFCD88
+6) sudo add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+7) apt-get install docker.io
+8) ln /usr/bin/docker /usr/local/bin/docker
+9) Now create a vi Dockerfile and copy the below contents
+	FROM ubuntu:16.04
+
+	RUN apt-get update && apt-get install -y net-tools && apt-get clean && rm -rf /var/lib/apt/lists/*
+	RUN apt-get update && apt-get install -y python3 && apt-get clean && rm -rf /var/lib/apt/lists/*
+	RUN apt-get update && apt-get install -y vim && apt-get clean && rm -rf /var/lib/apt/lists/*
+	RUN apt-get update && apt-get install -y python3-pip && apt-get clean && rm -rf /var/lib/apt/lists/*
+	RUN apt-get update && apt-get install -y firefox && apt-get clean && rm -rf /var/lib/apt/lists/*
+	RUN apt-get update && apt-get install -y xvfb && apt-get clean && rm -rf /var/lib/apt/lists/*
+	RUN pip3 install selenium
+	RUN pip3 install xvfbwrapper
+	RUN pip3 install --upgrade pip
+	RUN pip3 install numpy
+	RUN pip3 install pandas
+	
+10) And Now build the image based on the given name
+	docker build -t nginx_image .
+
+11) while building the image  we will get this error so make the changes in the vi /etc/reslov.conf file
+	
+	 nameserver 127.0.1.1
+  	 nameserver 8.8.8.8
+         nameserver 172.16.2.31
+
+	Downloaded newer image for ubuntu:16.04
+ 	---> 96da9143fb18
+	Step 2/12 : RUN apt-get update && apt-get install -y net-tools && apt-get clean && rm -rf /var/lib/apt/lists/*
+ 	---> Running in d9c72784400b
+	Err:1 http://archive.ubuntu.com/ubuntu xenial InRelease
+  	Temporary failure resolving 'archive.ubuntu.com'
+	Err:2 http://security.ubuntu.com/ubuntu xenial-security InRelease
+	 	or 
+	make changes in the file vi /etc/docker/daemon.json file
+		{
+ 			"default-address-pools":
+ 			[
+ 				{"base":"172.17.0.1/16","size":24}
+ 			]
+		}
+
+		{
+    			"dns": ["172.16.2.31", "8.8.8.8"]
+		}
+
+12) systemctl start docker
+	upstart:
+    service docker start
+	init.d:
+    /etc/init.d/docker start				
+13) Now the run the image which was build
+
+	docker run -i --name nginx -t nginx_image /bin/bash
+
+14) We can check the docker container is created or not 
+	docker ps -a
+15) apt install openvswitch-switch
+16) ovs-vsctl add-br SWITCH && ovs-vsctl add-port SWITCH enp4s0 && ifconfig enp4s0 0 && ifconfig SWITCH 172.16.6.10. up
+17)  run dhcp in host on enp3s0
+18)  ovs-vsctl add-br LAN && ovs-vsctl add-port LAN enp1s0 && ifconfig enp1s0 0 && ifconfig LAN 172.16.0.20 up
+19) 4) now create controller:
+	before this we need to run one command in host
+		CMD : “xhost +local:docker”
+	docker run -it - -rm  - -net none - -name controller  -e DISPLAY=$DISPLAY -v /tmp/.X11 – unix:/tmp/.X11 – unix - - privileged -v /dev:/dev ec controller:0.2 bash
+20) now connect the controller to LAN & SWITCH ovs:
+		ovs-docker add-port LAN eth0 controller - - ipaddress=192.168.0.100/24
+		ovs-docker add-port  SWITCH eth1 controller –ipaddress = 172.16.6.15/16
+
+21)now change the bashrc file in controller container
+	vi ~/.bashrc
+	copy this clines:
+		export ECOSROOT=/home/manoj/
+		export SNIFFERIP=172.16.6.10
+		export WAN_SNIFFERIP=172.16.6.10
+		export SNIFFERPORT=60025
+22)run two points:
+ 	docker run -it - -rm - -net none - -name endpoint1 - - privileged ecos-endpoint:0:1 bash
+23) connect the two end points to LAN & SWITCH ovs:
+	for LAN:
+		ovs-docker add-port LAN eth0 endpoint1
+		ovs-docker add-port LAN eth1 endpoint2
+	for SWITCH:
+		ovs-docker add-port SWITCH eth1 endpoint1 - -ipaddress=172.16.6.20/16
+		ovs-docket add-port SWITCH eth1 endpoint2 - -ipaddress=172.16.6.25/16
+CMD: ovs-docker add-port LAN eth0 endpoint1 && ovs-docker add-port LAN eth0 endpoint2 && ovs-docker add-port SWITCH eth1 endpoint1 - - ipaddress = 172.16.6.20/16 && ovs-docker add-port SWITCH eth1 endpoint2 - -ipaddress=172.16.6.25/16
+24) now run the endpoints:
+	before running the end point get the ip from the dut LAN dhcp server CMD 
+		dhclient eth0
+	Go to this file   --> vi home/manoj/Endpoint/Config/StaConfig.xml
+	and change the <ip> and <controller ip> as 172.16.6.20 for endpoint1
+		change the <ip> and <controller ip> as 172.16.6.25 for endpoint2
+25) go to home/manoj/Endpoint1/Lib and run the endpoint:
+	python Endpoint.py
+26) now run the sniffer and endpoint in WAN host:
+	for endpoint ----
+		go to home/manoj/Endpoint/Config/StaConfig.xml
+			controller ip as Sniffer Ip
+			MAC as dhcp connected mac
+		now run endpoint
+		python Endpoint.py
+	for sniffer - - - -
+		go to vi home/manoj/Sniffer/Lib/sniffer_agent.py
+	change the sniffer ip as 172.16.6.10 and 
+	run the sniffer
+		python Sniffer_agent.py
+
+
+ovs-vsctl add-br SWITCH && ovs-vsctl add-port SWITCH enp4s0 && ifconfig enp4s0 0 && ifconfig SWITCH 172.16.6.10 up && ovs-vsctl add-br LAN && ovs-vsctl add-port LAN enp1s0 && ifconfig enp1s0 0 && ifconfig LAN 192.168.0.5 up && ovs-docker add-port LAN eth0 controller - - ipaddress= 192.168.0.100/24 && ovs-docker add-port SWITCH eth1 controller - - ipaddress=172.16.6.15/16 && ovs-docker add-port  LAN eth0 endpoint1 && ovs-docker add-port LAN eth0 endpoint2 && ovs-docker add-port SWITCH eth1 endpoint1 - - ipaddress=172.16.6.20/16 && ovs-docker add-port SWITCH eth1 endpoint2 - -ipaddress=172.16.6.25/16 && xhost +local:docker
+
+for ssh in containers:
+	cmd:services ssh start
+
+to delete allocated
+	docker stop $(docker ps -a -q) && ovs – vsctl del – br LAN && ovs – vsctl del – br SWITCH && service network – manager restart
+
+
+ovs – vsctl del – port SWITCH 174c4fe9b0b14_l
+
+
+ERRORS:
+
+ImportError : No module named robotremoteserver
+Traceback (most recent call last):
+ 	File “/home/manoj/EcosAutomation/Controller/Lib/APLib/ControllerUtility.py”, line 23, in <module>
+
+SSH
+	
+27) https://stackoverflow.com/questions/42760216/docker-restart-container-failed-already-in-use-but-theres-no-more-docker-im/42760333
+
+To run python file
+	Docker run -it –rm –name my-first-python-script -v /home/manoj/Desktop/my-first-python-
+27) to copy a file to container
+	docker cp /home/manoj/Desktop/Docker/sample-python.py host1:/home/manoj/Desktop/host1
+	docker cp <file path> <container iD>:<path in container>
+
+28) Dockerfile
+
+#This is a sample image
+FROM python:3
+#MAINTAINER demousr@gmail.com
+ADD sample-python.py
+#RUN apt-get update
+#WORKDIR home/manoj/Desktop/Docker
+RUN python sample-python.py
+#RUN apt-get install nginx
+CMD [“echo”,”completed’]
+
+
+To build c image by using docket file
+
+FROM gcc:4.9
+COPY . usr/src/myapp
+WORKDIR usr/src/myapp
+RUN gcc -o myapp main.c
+CMD [“./myapp”]
+
+
+Then, build and run the docker image:
+
+$ docker build -t my_gcc_app .
+$ docker run -it –rm –name my_running_app my_gcc_app
+
+Remove all stopped containers:
+	$ docker rm $(docker ps -a -q)
+
+---> Show td create a docker container with multiple interfaces
+	1) create a bridge interfaces
+	  	cmd: $
+		creat a multiple bridges like this
+	2) run a container with specific ip
+		docker run –net <network name> --ip < docker ip> -it  < image> /bin/bash or bash
+
+	3) connect container to bridge
+		docker network connec < network name > < container name >
+
+DOCKER MACVLAN DRIVER:
+https://docs.docker.com/engine/userguide/networking/get-started-macvlan/
+
+Scenario:
+	Say, you have built Docker applications (legacy in nature like network traffic monitoring, system management etc.) which is expected to be directly connected to the underlying physical network. In this type of situation, you can use the macvlan network driver to assign a MAC address to each container ‘s virtual network interface, making it appear to be a physical network interface directly connected to the physical network.
+
+Cmd:
+   to creat a macvlan network:
+	$docker network create -d macvlan –subnet=192.168.15.0/24 –gateway=192.168.15.1 -o parent=enp3s0 lanconnection
+	docker network create -d macvlan –subnet < subnet ip > -- gateway =<gateway ip> -o 
+parent=< parent port id > < name > 
+
+to crate a container with mac vlan ip:
+	$ docker run  - -net= < network name > -- ip=< IP > - it <image name > bash
+
+
+
+29) FROM golang:1.7.3
+    WORKDIR /go/src/github.com/alexellis/href-counter/
+  
+    FROM alpine:latest
+    RUN apk --no-cache add ca-certificates
+    WORKDIR /root/
+	
